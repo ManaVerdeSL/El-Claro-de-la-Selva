@@ -1,0 +1,255 @@
+bash
+
+cat > /mnt/user-data/outputs/index.html << 'ENDOFFILE'
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>El Claro de la Selva · Preguntas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #faf9f6;
+      color: #1a1a1a;
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 2rem 1rem 3rem;
+    }
+
+    .intro {
+      max-width: 520px;
+      width: 100%;
+      background: #fff;
+      border: 1px solid #e8e5df;
+      border-radius: 16px;
+      padding: 2rem 1.75rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .intro-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      color: #1a1a1a;
+      margin-bottom: 1rem;
+    }
+
+    .intro-text {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #555;
+    }
+
+    .card {
+      max-width: 520px;
+      width: 100%;
+      background: #fff;
+      border: 1px solid #e8e5df;
+      border-radius: 16px;
+      padding: 2rem 1.75rem;
+      text-align: center;
+    }
+
+    .logo {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 1.5rem;
+    }
+
+    .category-selector {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 1.75rem;
+    }
+
+    .cat-btn {
+      font-size: 12px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1px solid #d8d5cf;
+      background: transparent;
+      color: #666;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+    }
+
+    .cat-btn:hover, .cat-btn.active {
+      background: #1a1a1a;
+      color: #fff;
+      border-color: #1a1a1a;
+    }
+
+    .category-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 1.5rem;
+      min-height: 24px;
+    }
+
+    .question-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 21px;
+      line-height: 1.55;
+      color: #1a1a1a;
+      margin-bottom: 2rem;
+      min-height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .question-text.placeholder {
+      font-style: italic;
+      color: #aaa;
+      font-size: 17px;
+    }
+
+    .btn-next {
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 32px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn-next:hover { opacity: 0.82; }
+    .btn-next:active { transform: scale(0.98); }
+
+    .counter {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="intro">
+    <div class="intro-title">El Claro de la Selva</div>
+    <p class="intro-text">
+      ¡Es hora de conocerse, madreselvers! Escaneando el código QR (basta con que una persona lo haga) encontraréis preguntas de percepción, conexión y reflexión para sumergiros en la realidad de quienes hoy compartiréis mesa. ¿Quién empieza? Miraos a los ojos: la primera persona que aparte la mirada responde primero. Después continuaréis en el sentido de las agujas del reloj. ¡Disfrutad... y buen provecho!
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="logo">Preguntas para la mesa</div>
+    <div class="category-selector" id="catSelector"></div>
+    <div class="category-badge" id="badge"></div>
+    <div class="question-text placeholder" id="question">Pulsa el botón para empezar</div>
+    <button class="btn-next" onclick="nextQuestion()">→ Nueva pregunta</button>
+    <div class="counter" id="counter"></div>
+  </div>
+
+  <script>
+    const questions = [
+      { q: "¿Cuál es el plan perfecto para un sábado por la mañana?", cat: "Rutinas", bg: "#E1F5EE", color: "#0F6E56" },
+      { q: "¿Qué habilidad te gustaría haber aprendido de pequeño?", cat: "Infancia", bg: "#EEEDFE", color: "#3C3489" },
+      { q: "¿Cuál es la mentira más grande que te has creído?", cat: "Confieso", bg: "#FAECE7", color: "#712B13" },
+      { q: "Si pudieras vivir en otra ciudad del mundo, ¿cuál sería y por qué?", cat: "Mundo", bg: "#E6F1FB", color: "#0C447C" },
+      { q: "¿Cuál es tu superpoder social? ¿Y tu kryptonita?", cat: "Personalidad", bg: "#FBEAF0", color: "#72243E" },
+      { q: "¿A qué persona de tu vida le debes una disculpa?", cat: "Confieso", bg: "#FAECE7", color: "#712B13" },
+      { q: "¿Qué es lo más raro que comes o que te gusta y no te atreves a confesar?", cat: "Vicios", bg: "#FAEEDA", color: "#633806" },
+      { q: "Si te dieran 10.000€ mañana pero no puedes ahorrarlos, ¿en qué los gastas?", cat: "Mundo", bg: "#E6F1FB", color: "#0C447C" },
+      { q: "¿Cuál es tu película o serie favorita que nadie más parece haber visto?", cat: "Cultura", bg: "#EAF3DE", color: "#27500A" },
+      { q: "¿Qué opinión tienes que la gente suele encontrar rara o controvertida?", cat: "Opiniones", bg: "#EEEDFE", color: "#3C3489" },
+      { q: "¿Cuándo fue la última vez que hiciste algo por primera vez?", cat: "Reflexión", bg: "#E1F5EE", color: "#0F6E56" },
+      { q: "¿Cuál es el consejo que más repites pero tú mismo menos sigues?", cat: "Confieso", bg: "#FAECE7", color: "#712B13" },
+      { q: "¿Qué trabajo soñabas tener de niño y qué piensas de eso ahora?", cat: "Infancia", bg: "#EEEDFE", color: "#3C3489" },
+      { q: "Si solo pudieras comer la cocina de un país el resto de tu vida, ¿cuál?", cat: "Vicios", bg: "#FAEEDA", color: "#633806" },
+      { q: "¿Cuál es la cosa más valiente que has hecho?", cat: "Reflexión", bg: "#E1F5EE", color: "#0F6E56" },
+      { q: "¿Tienes algún ritual supersticioso que no le has contado a nadie?", cat: "Confieso", bg: "#FAECE7", color: "#712B13" },
+      { q: "¿Qué libro, podcast o documental recomendarías a todo el mundo?", cat: "Cultura", bg: "#EAF3DE", color: "#27500A" },
+      { q: "¿Qué momento de tu vida repetirías exactamente igual si pudieras?", cat: "Reflexión", bg: "#E1F5EE", color: "#0F6E56" },
+      { q: "¿Qué es lo primero que notas de una persona cuando la conoces?", cat: "Personalidad", bg: "#FBEAF0", color: "#72243E" },
+      { q: "¿Tienes alguna habilidad oculta que sorprendería a la gente de esta mesa?", cat: "Personalidad", bg: "#FBEAF0", color: "#72243E" },
+      { q: "¿Qué es lo que más echas de menos de cuando eras más joven?", cat: "Infancia", bg: "#EEEDFE", color: "#3C3489" },
+      { q: "¿Cuál es tu opinión impopular sobre algo completamente inofensivo?", cat: "Opiniones", bg: "#EEEDFE", color: "#3C3489" },
+      { q: "¿Qué es lo más generoso que alguien ha hecho por ti?", cat: "Reflexión", bg: "#E1F5EE", color: "#0F6E56" },
+      { q: "Si pudieras cenar con tres personas de la historia, ¿quiénes serían?", cat: "Mundo", bg: "#E6F1FB", color: "#0C447C" },
+      { q: "¿Cuál es tu mayor logro que no figura en tu currículum?", cat: "Personalidad", bg: "#FBEAF0", color: "#72243E" },
+      { q: "¿Qué canción define tu adolescencia?", cat: "Cultura", bg: "#EAF3DE", color: "#27500A" },
+      { q: "¿Cuál es el límite que nunca cruzarías aunque te pagaran mucho?", cat: "Opiniones", bg: "#EEEDFE", color: "#3C3489" },
+      { q: "¿Qué harías diferente si volvieras a tener 20 años?", cat: "Reflexión", bg: "#E1F5EE", color: "#0F6E56" },
+      { q: "¿Cuál es el mejor consejo que te han dado y cuándo lo entendiste de verdad?", cat: "Reflexión", bg: "#E1F5EE", color: "#0F6E56" },
+      { q: "¿Qué es lo que más te cuesta pedir ayuda?", cat: "Confieso", bg: "#FAECE7", color: "#712B13" },
+    ];
+
+    const cats = ["Todas", ...new Set(questions.map(q => q.cat))];
+    let activeCat = "Todas";
+    let shown = [];
+
+    function getFiltered() {
+      return activeCat === "Todas" ? questions : questions.filter(q => q.cat === activeCat);
+    }
+
+    function nextQuestion() {
+      const filtered = getFiltered();
+      if (shown.length >= filtered.length) shown = [];
+      const remaining = filtered.filter(q => !shown.includes(q));
+      const current = remaining[Math.floor(Math.random() * remaining.length)];
+      shown.push(current);
+
+      const qEl = document.getElementById('question');
+      qEl.textContent = current.q;
+      qEl.classList.remove('placeholder');
+
+      const badge = document.getElementById('badge');
+      badge.textContent = current.cat;
+      badge.style.background = current.bg;
+      badge.style.color = current.color;
+
+      document.getElementById('counter').textContent =
+        shown.length + ' de ' + filtered.length + ' preguntas vistas';
+    }
+
+    function buildCats() {
+      const sel = document.getElementById('catSelector');
+      cats.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'cat-btn' + (c === activeCat ? ' active' : '');
+        btn.textContent = c;
+        btn.onclick = () => {
+          activeCat = c;
+          shown = [];
+          document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          nextQuestion();
+        };
+        sel.appendChild(btn);
+      });
+    }
+
+    buildCats();
+  </script>
+</body>
+</html>
+ENDOFFILE
+echo "done"
+Salida
+
+done
